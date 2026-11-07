@@ -1,0 +1,178 @@
+{
+ "company": "Grind & Crumb, fictional 12-store independent caf\u00e9 chain (Sheffield, Leeds, York, Manchester, Nottingham, Harrogate, Hull). Data covers 1 Jul 2025 to 30 Jun 2026. Board has \u00a31.5m to invest next year.",
+ "ground_rules": [
+  "All prices and sales net of VAT",
+  "Labour = scheduled hours \u00d7 hourly wage \u00d7 1.13",
+  "Delivery: platform commission on order value + \u00a30.45 packaging per order + ~4 min staff time",
+  "Compare stores on store-level profit; ignore head office and tax"
+ ],
+ "key_events": [
+  "Leeds Trinity opened 15 Sep 2025, 0.4 miles from Briggate",
+  "40p oat milk surcharge from 12 Jan 2026",
+  "App v3.0 launched 2 Mar 2026; v3.1 hotfix 13 Apr 2026",
+  "Dashly commission 27% -> 33% from 1 Apr 2026 (RushEats stays 30%)",
+  "National Living Wage +6.7% from 1 Apr 2026"
+ ],
+ "findings": [
+  {
+   "rank": 1,
+   "problem": "Lunch understaffing at Piccadilly and Spinningfields",
+   "stores": "Manchester Piccadilly, Manchester Spinningfields",
+   "root_cause": "Lunch rotas cover ~27 customers per staff hour vs ~18 elsewhere, so 1 in 5 lunch visitors walk out; burnout drives staff turnover",
+   "impact_gbp": 110000,
+   "impact_basis": "Lost lunch sales if conversion matched the chain median (Piccadilly ~\u00a362k, Spinningfields ~\u00a348k); sales, not profit",
+   "evidence": "Lunch conversion 28.8% vs 36% elsewhere; exit survey: workload is the top reason; 27-35% of reviews mention queues/staff; Piccadilly turnover 230%",
+   "confidence": "High"
+  },
+  {
+   "rank": 2,
+   "problem": "Piccadilly loses money despite the biggest sales",
+   "stores": "Manchester Piccadilly",
+   "root_cause": "Rent of \u00a330.5k/month is 33% of sales vs a 12% chain average; the store makes a loss every month",
+   "impact_gbp": 47828,
+   "impact_basis": "Store-level loss for the year",
+   "evidence": "Starter P&L: -\u00a347.8k profit on \u00a31.11m sales; manager says rent is head office's problem",
+   "confidence": "High"
+  },
+  {
+   "rank": 3,
+   "problem": "Leeds Trinity cannibalised Leeds Briggate",
+   "stores": "Leeds Briggate, Leeds Trinity",
+   "root_cause": "Trinity opened 0.4 miles away; Briggate footfall fell ~29% while the rest of the chain fell only ~5%",
+   "impact_gbp": 114000,
+   "impact_basis": "Briggate profit fell from \u00a317.4k/month (Jul-Aug) to \u00a37.9k/month (Oct-Jun), annualised",
+   "evidence": "Briggate footfall 33.9k to 23.9k/month; regulars told the manager they now use the new one; Briggate waste rose with unchanged par levels",
+   "confidence": "High"
+  },
+  {
+   "rank": 4,
+   "problem": "Delivery growth is diluting margin",
+   "stores": "All",
+   "root_cause": "Delivery doubled from 11% to 23% of sales but keeps only 41% after food, commission and packaging vs 72% in-store; Dashly raised commission to 33% in April",
+   "impact_gbp": 84000,
+   "impact_basis": "Dashly hike ~\u00a343k/yr plus ~\u00a341k/yr available from a \u00a31.50 small-order fee (assumes 15% of small orders drop)",
+   "evidence": "29% of delivery orders are under \u00a38 and earn \u00a30.61-\u00a32.02 each after costs; RushEats suggested a min basket",
+   "confidence": "Medium"
+  },
+  {
+   "rank": 5,
+   "problem": "App v3.0 broke click & collect",
+   "stores": "All",
+   "root_cause": "Stamp migration bug and checkout freeze; app orders fell 41% overnight and customers moved to the tills, lengthening queues",
+   "impact_gbp": 0,
+   "impact_basis": "Little direct sales loss (orders moved in-store) but it adds to lunch queues and cost loyalty data",
+   "evidence": "App orders 571/day (Feb) to 337/day (Mar), 425/day by May-Jun; review rating fell from 3.9 to 3.4; 43% of app users say they visit less",
+   "confidence": "High"
+  },
+  {
+   "rank": 6,
+   "problem": "Hull is run down",
+   "stores": "Hull Paragon",
+   "root_cause": "Broken equipment, no cleaner since October and over-ordering",
+   "impact_gbp": 25000,
+   "impact_basis": "Excess waste ~\u00a39k + excess repairs ~\u00a316k vs chain medians",
+   "evidence": "Waste 21% vs 9% chain; repairs \u00a324.2k vs \u00a37.9k median; worst rating 3.05; 25% of reviews mention dirt/broken kit; turnover 178%",
+   "confidence": "Medium"
+  },
+  {
+   "rank": 7,
+   "problem": "Oat milk surcharge annoys customers",
+   "stores": "All",
+   "root_cause": "40p charge from 12 Jan 2026 while rival Bean Social dropped theirs",
+   "impact_gbp": 48000,
+   "impact_basis": "Revenue the charge raises (would be lost if dropped); milk-drink volume held, so few sales lost so far",
+   "evidence": "Oat share fell from 31% to 24%; 53% of oat drinkers say they visit less vs 30% of dairy; ~40 complaints/month in reviews",
+   "confidence": "Medium"
+  },
+  {
+   "rank": 8,
+   "problem": "Campus kiosk loses money outside term",
+   "stores": "Sheffield Uni Campus",
+   "root_cause": "Full opening costs through summer and Easter when students are away",
+   "impact_gbp": 10700,
+   "impact_basis": "Sum of losses in loss-making months (Jul, Aug, Sep, Apr, Jun)",
+   "evidence": "Sales fall from ~\u00a345k/month in term to ~\u00a313k in summer",
+   "confidence": "High"
+  }
+ ],
+ "data_issues": [
+  {
+   "issue": "Duplicate receipts",
+   "file": "transactions.csv",
+   "count": 64,
+   "handling": "Dropped exact duplicates"
+  },
+  {
+   "issue": "Duplicate receipt lines",
+   "file": "transaction_lines.csv",
+   "count": 106,
+   "handling": "Dropped exact duplicates"
+  },
+  {
+   "issue": "Refund rows (negative, 0 lines)",
+   "file": "transactions.csv",
+   "count": 570,
+   "handling": "Excluded from basket and order analysis"
+  },
+  {
+   "issue": "Flat whites priced \u00a335 (10x) on 14 Mar 2026, York",
+   "file": "transaction_lines.csv",
+   "count": 7,
+   "handling": "Excluded; likely a till price error"
+  },
+  {
+   "issue": "Footfall counter dead, Northern Quarter 19-31 Jan 2026",
+   "file": "footfall.csv",
+   "count": 39,
+   "handling": "Excluded those days from conversion"
+  },
+  {
+   "issue": "Footfall spike ~13x, Harrogate 6 Dec 2025",
+   "file": "footfall.csv",
+   "count": 3,
+   "handling": "Excluded that day"
+  },
+  {
+   "issue": "Hull waste dates in DD/MM/YYYY (Oct 2025)",
+   "file": "waste_log.csv",
+   "count": 273,
+   "handling": "Parsed day-first"
+  },
+  {
+   "issue": "Missing units wasted",
+   "file": "waste_log.csv",
+   "count": 129,
+   "handling": "Left out of waste rates"
+  },
+  {
+   "issue": "Duplicate loyalty members",
+   "file": "loyalty_customers.csv",
+   "count": 25,
+   "handling": "Dropped; 9,000 unique members"
+  },
+  {
+   "issue": "Duplicate reviews",
+   "file": "customer_reviews.csv",
+   "count": 27,
+   "handling": "Dropped"
+  },
+  {
+   "issue": "31 spellings of 12 store names",
+   "file": "customer_reviews.csv",
+   "count": 31,
+   "handling": "Mapped to store_id"
+  },
+  {
+   "issue": "Leeds Trinity trades 10 months; half rent in Sep",
+   "file": "starter P&L",
+   "count": 10,
+   "handling": "Compared per trading month"
+  },
+  {
+   "issue": "Receipt files are a 10% sample",
+   "file": "transactions.csv",
+   "count": 10,
+   "handling": "Used only for ratios; totals from daily sales"
+  }
+ ]
+}
