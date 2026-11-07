@@ -1,7 +1,8 @@
 import { Stat } from '../components/ui.jsx';
 import { TrendChart } from '../components/Charts.jsx';
 import { bucket, storeName } from '../lib/data.js';
-import { money, moneyFull, pct } from '../lib/format.js';
+import { money, moneyFull, pct, change } from '../lib/format.js';
+import { Icon } from '../components/ui.jsx';
 
 const EXPENSES = [
   ['labour', 'Labour'],
@@ -24,15 +25,32 @@ export default function Finance({ agg, prev, isAll, setStore }) {
 
   return (
     <div className="page">
-      <section className="fin-grid">
+      <section className="home-grid">
         <Stat icon="pound" label="Gross sales" value={money(t.gross_sales)} now={t.gross_sales} prev={p?.gross_sales} sub="Before discounts" />
-        <Stat icon="percent" label="Discounts" value={money(t.discounts)} tone="bad" now={t.discounts} prev={p?.discounts} higherIsGood={false} sub="Estimated from receipts" />
-        <Stat icon="bin" label="Wastage" value={money(t.wastage)} tone={t.wastage ? 'bad' : undefined} now={t.wastage} prev={p?.wastage} higherIsGood={false} sub={`${pct(t.net_sales ? t.wastage / t.net_sales : 0)} of sales · counted in COGS`} />
-        <Stat icon="wallet" label="Expenses" value={money(t.expenses)} now={t.expenses} prev={p?.expenses} higherIsGood={false} sub="Labour, rent, delivery and running costs" />
         <Stat icon="pound" label="Net sales" value={money(t.net_sales)} tone="good" now={t.net_sales} prev={p?.net_sales} />
-        <Stat icon="box" label="COGS" value={money(t.cogs)} now={t.cogs} prev={p?.cogs} higherIsGood={false} sub={`${pct(t.net_sales ? t.cogs / t.net_sales : 0)} of net sales`} />
         <Stat icon="trend" label="Gross profit" value={money(t.gross_profit)} tone="good" now={t.gross_profit} prev={p?.gross_profit} sub={`${pct(t.gross_margin)} margin`} />
-        <Stat icon="trend" label="Net profit" value={money(t.net_profit)} tone={t.net_profit < 0 ? 'bad' : 'good'} now={t.net_profit} prev={p?.net_profit} sub={`${pct(t.net_margin)} store margin`} className="stat-feature" />
+
+        <div className="card revenue-card profit-card">
+          <div className="stat-icon dark"><Icon name="trend" /></div>
+          <div className="rev-label">Net profit</div>
+          <div className={`rev-value ${t.net_profit < 0 ? 'neg' : ''}`}>{money(t.net_profit)}</div>
+          {(() => { const ch = p ? change(t.net_profit, p.net_profit) : null; return ch ? <div className="profit-delta"><span className={`delta ${ch.good ? 'up' : 'down'}`}>{ch.text}</span> vs previous period</div> : null; })()}
+          <div className="rev-bar" aria-hidden="true">
+            <span className="seg seg-app" style={{ flexGrow: Math.max(t.cogs, 0.0001) }} />
+            <span className="seg seg-delivery" style={{ flexGrow: Math.max(t.expenses, 0.0001) }} />
+            <span className="seg seg-instore" style={{ flexGrow: Math.max(t.net_profit, 0.0001) }} />
+          </div>
+          <dl className="rev-split">
+            <div><dt>Net sales</dt><dd>{money(t.net_sales)}</dd></div>
+            <div><dt><i className="dot seg-app" />COGS</dt><dd>−{money(t.cogs)}</dd></div>
+            <div><dt><i className="dot seg-delivery" />Expenses</dt><dd>−{money(t.expenses)}</dd></div>
+            <div><dt><i className="dot seg-instore" />Store margin</dt><dd>{pct(t.net_margin)}</dd></div>
+          </dl>
+        </div>
+
+        <Stat icon="bin" label="Wastage" value={money(t.wastage)} tone={t.wastage ? 'bad' : undefined} now={t.wastage} prev={p?.wastage} higherIsGood={false} sub={`${pct(t.net_sales ? t.wastage / t.net_sales : 0)} of sales · counted in COGS`} />
+        <Stat icon="box" label="COGS" value={money(t.cogs)} now={t.cogs} prev={p?.cogs} higherIsGood={false} sub={`${pct(t.net_sales ? t.cogs / t.net_sales : 0)} of net sales`} />
+        <Stat icon="wallet" label="Expenses" value={money(t.expenses)} now={t.expenses} prev={p?.expenses} higherIsGood={false} sub="Labour, rent, delivery and running costs" />
       </section>
 
       <div className="two-col">

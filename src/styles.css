@@ -231,3 +231,15 @@ h1, h2 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
   .card, .stat-icon { transition: none; }
   .stat:hover, .revenue-card:hover { transform: none; }
 }
+
+/* Net profit takes two columns so the finance boxes fill two even rows */
+.fin-grid .stat-wide { grid-column: span 2; }
+@media (max-width: 640px) { .fin-grid .stat-wide { grid-column: auto; } }
+
+/* Finance: tall net profit card on the right, like the revenue card */
+.profit-card .rev-value.neg { color: #ff9a7f; }
+.profit-delta { font-size: 13px; color: rgba(251, 247, 242, 0.65); margin: -10px 0 16px; }
+.profit-delta .delta.up { color: #8fe0b3; }
+.profit-delta .delta.down { color: #ff9a7f; }
+.rev-value { white-space: nowrap; }
+.profit-card .rev-value { font-size: clamp(30px, 2.8vw, 44px); }
