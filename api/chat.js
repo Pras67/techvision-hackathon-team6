@@ -18,7 +18,9 @@ export async function askGemini({ messages = [], context = {} }, env = process.e
   if (!key) {
     return { status: 500, body: { error: 'The AI advisor is not set up yet. Add GEMINI_API_KEY to the .env file (local) or to Vercel → Settings → Environment Variables, then restart.' } };
   }
-  const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
+  // GEMINI_MODEL can list several models separated by commas: the first is tried first,
+  // the next ones are fallbacks when a model is busy (503/429) or not available (404).
+  const models = (env.GEMINI_MODEL || 'gemini-3.8-flash').split(',').map((m) => m.trim()).filter(Boolean);
   const trimmed = messages.slice(-20).filter((m) => m && typeof m.text === 'string' && m.text.trim());
   if (!trimmed.length) return { status: 400, body: { error: 'Send a message first.' } };
 
@@ -28,22 +30,34 @@ export async function askGemini({ messages = [], context = {} }, env = process.e
     generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
   };
 
-  try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify(payload),
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      const msg = j?.error?.message || `Gemini returned ${r.status}`;
-      return { status: 502, body: { error: `Gemini couldn't answer: ${msg}` } };
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  let lastError = 'no model answered';
+
+  for (const model of models) {
+    // Up to 3 tries per model when it is busy, waiting a little longer each time.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify(payload),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) {
+          const text = (j.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('').trim();
+          return { status: 200, body: { text: text || 'Gemini returned an empty answer. Try rephrasing the question.', model } };
+        }
+        lastError = `${model}: ${j?.error?.message || `status ${r.status}`}`;
+        if (r.status === 503 || r.status === 429 || r.status === 500) { await wait(800 * (attempt + 1)); continue; }
+        if (r.status === 404) break; // model not available: move to the next one
+        return { status: 502, body: { error: `Gemini couldn't answer: ${lastError}` } }; // e.g. bad key
+      } catch (e) {
+        lastError = `${model}: ${e.message}`;
+        await wait(800);
+      }
     }
-    const text = (j.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('').trim();
-    return { status: 200, body: { text: text || 'Gemini returned an empty answer. Try rephrasing the question.' } };
-  } catch (e) {
-    return { status: 502, body: { error: `Couldn't reach Gemini: ${e.message}` } };
   }
+  return { status: 502, body: { error: `Gemini is busy right now. Try again in a minute. (${lastError})` } };
 }
 
 export default async function handler(req, res) {
