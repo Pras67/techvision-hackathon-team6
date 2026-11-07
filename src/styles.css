@@ -208,3 +208,26 @@ h1, h2 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
   .exp-pct { display: none; }
   .segmented button { padding: 8px 10px; }
 }
+
+/* ---------- fonts: Montserrat for headings and numbers, Open Sans for text ---------- */
+:root {
+  --font-display: 'Montserrat', system-ui, sans-serif;
+  --font-body: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --outline: rgba(35, 26, 21, 0.28);
+}
+
+/* ---------- box outlines and hover ---------- */
+.card { border: 1px solid var(--outline); transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.card:hover { border-color: var(--ink); box-shadow: 0 8px 22px rgba(35, 26, 21, 0.10); }
+.stat:hover, .revenue-card:hover { transform: translateY(-3px); }
+.revenue-card, .stat-feature { border-color: var(--ink); }
+.revenue-card:hover, .stat-feature:hover { box-shadow: 0 10px 26px rgba(35, 26, 21, 0.28); }
+.stat-feature:hover .stat-icon, .revenue-card:hover .stat-icon { background: rgba(242, 193, 78, 0.16); }
+.stat:hover .stat-icon { background: var(--ink); color: var(--crema); transition: background .18s ease, color .18s ease; }
+.advisor-card:hover { box-shadow: none; }
+.btn-ghost, .segmented, .datebar input, .date-pair input, .composer textarea, .suggestion { border-color: var(--outline); }
+.btn-ghost:hover, .suggestion:hover { border-color: var(--ink); }
+@media (prefers-reduced-motion: reduce) {
+  .card, .stat-icon { transition: none; }
+  .stat:hover, .revenue-card:hover { transform: none; }
+}
