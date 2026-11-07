@@ -243,3 +243,7 @@ h1, h2 { font-family: var(--font-display); margin: 0; letter-spacing: -0.01em; }
 .profit-delta .delta.down { color: #ff9a7f; }
 .rev-value { white-space: nowrap; }
 .profit-card .rev-value { font-size: clamp(30px, 2.8vw, 44px); }
+
+/* Brand logo */
+.brand-logo { height: 40px; width: auto; display: block; flex: none; }
+@media (max-width: 900px) { .brand-logo { height: 32px; } }

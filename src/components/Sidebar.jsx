@@ -12,7 +12,7 @@ export default function Sidebar({ page, setPage, store, setStore }) {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="brand-mark" aria-hidden="true" />
+        <img src="/logo.png" alt="Grind &amp; Crumb logo" className="brand-logo" />
         <div>
           <div className="brand-name">Grind &amp; Crumb</div>
           <div className="brand-sub">CEO dashboard</div>
