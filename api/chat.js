@@ -30,33 +30,66 @@ export async function askGemini({ messages = [], context = {} }, env = process.e
     generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
   };
 
+  const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+  const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': key };
   const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  const started = Date.now();
+  const outOfTime = () => Date.now() - started > 45000; // give up after ~45s in total
   let lastError = 'no model answered';
 
-  for (const model of models) {
-    // Up to 3 tries per model when it is busy, waiting a little longer each time.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-          body: JSON.stringify(payload),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok) {
+  // One call to one model, cut off after 25 seconds so the chat never hangs.
+  async function call(model) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 25000);
+    try {
+      const r = await fetch(`${BASE}/models/${encodeURIComponent(model)}:generateContent`, { method: 'POST', headers, body: JSON.stringify(payload), signal: ctrl.signal });
+      const j = await r.json().catch(() => ({}));
+      return { status: r.status, ok: r.ok, j };
+    } catch (e) {
+      return { status: 0, ok: false, j: { error: { message: e.name === 'AbortError' ? 'took longer than 25s' : e.message } } };
+    } finally { clearTimeout(timer); }
+  }
+
+  // Ask Google which "flash" models this key can use, as automatic backups.
+  async function discoverBackups(skip) {
+    try {
+      const r = await fetch(`${BASE}/models?pageSize=200`, { headers });
+      const j = await r.json();
+      return (j.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map((m) => m.name.replace(/^models\//, ''))
+        .filter((n) => /flash/i.test(n) && !/(image|tts|audio|live|embedding|preview-\d{2}-\d{2})/i.test(n) && !skip.includes(n))
+        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true })) // newest version numbers first
+        .slice(0, 4);
+    } catch { return []; }
+  }
+
+  async function tryModels(list, triesEach) {
+    for (const model of list) {
+      for (let attempt = 0; attempt < triesEach; attempt++) {
+        if (outOfTime()) return null;
+        const { status, ok, j } = await call(model);
+        if (ok) {
           const text = (j.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('').trim();
+          console.log(`[advisor] answered by ${model} in ${((Date.now() - started) / 1000).toFixed(1)}s`);
           return { status: 200, body: { text: text || 'Gemini returned an empty answer. Try rephrasing the question.', model } };
         }
-        lastError = `${model}: ${j?.error?.message || `status ${r.status}`}`;
-        if (r.status === 503 || r.status === 429 || r.status === 500) { await wait(800 * (attempt + 1)); continue; }
-        if (r.status === 404) break; // model not available: move to the next one
-        return { status: 502, body: { error: `Gemini couldn't answer: ${lastError}` } }; // e.g. bad key
-      } catch (e) {
-        lastError = `${model}: ${e.message}`;
-        await wait(800);
+        lastError = `${model}: ${j?.error?.message || `status ${status}`}`;
+        console.log(`[advisor] ${lastError}`);
+        if (status === 400 || status === 401 || status === 403) return { status: 502, body: { error: `Gemini couldn't answer: ${lastError}` } }; // bad key or request
+        if (status === 404) break; // model not available to this key: next model
+        await wait(600 * (attempt + 1)); // busy or timed out: short pause, try again
       }
     }
+    return null;
   }
+
+  const first = await tryModels(models, 2);
+  if (first) return first;
+  const backups = await discoverBackups(models);
+  if (backups.length) console.log(`[advisor] trying backups: ${backups.join(', ')}`);
+  const second = await tryModels(backups, 1);
+  if (second) return second;
   return { status: 502, body: { error: `Gemini is busy right now. Try again in a minute. (${lastError})` } };
 }
 

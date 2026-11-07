@@ -18,6 +18,8 @@ export default function App() {
   const [anchor, setAnchor] = useState(LAST);
   const [custom, setCustom] = useState({ from: '2026-01-01', to: LAST });
   const [messages, setMessages] = useState([]);
+  const [chatBusy, setChatBusy] = useState(false);
+  const [chatError, setChatError] = useState('');
 
   const ids = store === 'all' ? ALL_IDS : [store];
   const range = useMemo(() => resolveRange(preset, anchor, custom), [preset, anchor, custom]);
@@ -73,7 +75,7 @@ export default function App() {
 
         {page === 'home' && <Home agg={agg} prev={prev} singleDay={singleDay} isAll={store === 'all'} setStore={goStore} />}
         {page === 'finance' && <Finance agg={agg} prev={prev} isAll={store === 'all'} setStore={goStore} />}
-        {page === 'advisor' && <Advisor buildContext={buildContext} scopeLabel={`${scope}, ${rangeLabel(range)}`} messages={messages} setMessages={setMessages} />}
+        {page === 'advisor' && <Advisor buildContext={buildContext} scopeLabel={`${scope}, ${rangeLabel(range)}`} messages={messages} setMessages={setMessages} busy={chatBusy} setBusy={setChatBusy} error={chatError} setError={setChatError} />}
       </main>
     </div>
   );

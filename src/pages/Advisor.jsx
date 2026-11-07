@@ -25,10 +25,8 @@ function Rich({ text }) {
   });
 }
 
-export default function Advisor({ buildContext, scopeLabel, messages, setMessages }) {
+export default function Advisor({ buildContext, scopeLabel, messages, setMessages, busy, setBusy, error, setError }) {
   const [input, setInput] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
   const endRef = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages, busy]);
