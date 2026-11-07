@@ -24,7 +24,7 @@ export default function App() {
   const ids = store === 'all' ? ALL_IDS : [store];
   const range = useMemo(() => resolveRange(preset, anchor, custom), [preset, anchor, custom]);
   const agg = useMemo(() => aggregate(ids, range), [store, range]);
-  const prevRange = preset === 'all' ? null : previousRange(range);
+  const prevRange = preset === 'all' ? null : previousRange(range, preset);
   const prev = useMemo(() => (prevRange ? aggregate(ids, prevRange) : null), [store, prevRange?.from, prevRange?.to]);
   const scope = store === 'all' ? 'All stores' : storeName(store);
   const singleDay = range.from === range.to;

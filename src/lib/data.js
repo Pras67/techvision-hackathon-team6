@@ -43,7 +43,24 @@ export function rangeLabel({ from, to }) {
   return `${fmt(from, { day: 'numeric', month: 'short', year: 'numeric' })} – ${fmt(to, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 }
 
-export function previousRange({ from, to }) {
+export function previousRange({ from, to }, preset) {
+  // A month is compared with the whole previous calendar month (e.g. November vs all of October).
+  if (preset === "month") {
+    const first = toD(from.slice(0, 8) + "01");
+    first.setUTCMonth(first.getUTCMonth() - 1);
+    const pFrom = toS(first);
+    const last = toD(from.slice(0, 8) + "01"); last.setUTCDate(0);
+    const pTo = toS(last);
+    if (pTo < FIRST) return null;
+    return { from: clamp(pFrom), to: pTo };
+  }
+  // A week is compared with the same days of the week before (Mon-Sun vs Mon-Sun).
+  if (preset === "week") {
+    const pFrom = addDays(from, -7), pTo = addDays(to, -7);
+    if (pTo < FIRST) return null;
+    return { from: clamp(pFrom), to: pTo };
+  }
+  // Anything else is compared with the same number of days just before it.
   const len = Math.round((toD(to) - toD(from)) / 864e5) + 1;
   const pTo = addDays(from, -1), pFrom = addDays(from, -len);
   if (pTo < FIRST) return null;
